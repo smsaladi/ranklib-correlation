@@ -97,7 +97,7 @@ public class Evaluator {
 			System.out.println("\t\t\t\tIf not specified, all features will be used.");
 			//System.out.println("\t[ -metric2t <metric> ]\tMetric to optimize on the training data. Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, BEST@k, ERR@k (default=" + trainMetric + ")");
 			System.out.println("\t[ -metric2t <metric> ]\tMetric to optimize on the training data.  " +
-                                           "Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, ERR@k (default=" + trainMetric + ")");
+                                           "Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, ERR@k, KTAU@k (default=" + trainMetric + ")");
 			System.out.println("\t[ -gmax <label> ]\tHighest judged relevance label. It affects the calculation of ERR " +
                                            "(default=" + (int)SimpleMath.logBase2(ERRScorer.MAX) + ", i.e. 5-point scale {0,1,2,3,4})");
 			System.out.println("\t[ -qrel <file> ]\tTREC-style relevance judgment file. It only affects MAP and NDCG (default=unspecified)");

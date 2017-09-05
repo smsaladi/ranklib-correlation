@@ -16,12 +16,13 @@ import java.util.HashMap;
  */
 public class MetricScorerFactory {
 
-	private static MetricScorer[] mFactory = new MetricScorer[]{new APScorer(), new NDCGScorer(), new DCGScorer(), new PrecisionScorer(), new ReciprocalRankScorer(), new BestAtKScorer(), new ERRScorer()};
+	private static MetricScorer[] mFactory = new MetricScorer[]{new APScorer(), new KTAUScorer(), new NDCGScorer(), new DCGScorer(), new PrecisionScorer(), new ReciprocalRankScorer(), new BestAtKScorer(), new ERRScorer()};
 	private static HashMap<String, MetricScorer> map = new HashMap<String, MetricScorer>();
-	
+
 	public MetricScorerFactory()
 	{
 		map.put("MAP", new APScorer());
+		map.put("KTAU", new KTAUScorer());
 		map.put("NDCG", new NDCGScorer());
 		map.put("DCG", new DCGScorer());
 		map.put("P", new PrecisionScorer());
