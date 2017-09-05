@@ -13,7 +13,6 @@ package ciir.umass.edu.metric;
 
 import ciir.umass.edu.learning.RankList;
 import ciir.umass.edu.utilities.RankLibError;
-import ciir.umass.edu.utilities.KendallsCorrelation;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -34,10 +33,6 @@ public class KTAUScorer extends MetricScorer {
 
 	public HashMap<String, Integer> relDocCount = null;
 
-	public KTAUScorer()
-	{
-		this.k = 0;
-	}
 	public MetricScorer copy()
 	{
 		return new KTAUScorer();
@@ -46,35 +41,29 @@ public class KTAUScorer extends MetricScorer {
     /**
      * Compute KTAU of multiple lists by summing the inversions for each list
      * and dividing by the total number of pairs
-     * Don't use `public double score(RankList rl)` since the calculation will
-     * be less precise by going through the KTAU of each list
      */
 	public double score(List<RankList> rl)
 	{
         if(k == 1)
-            return super.score(rl);
+        {
+    		double score = 0.0;
+    		for(int i = 0; i < rl.size(); i++)
+    			score += 1.0 - 2 * countMisorderedPairs(rl.get(i)) / countTotalPairs(rl.get(i));
+    		return score/rl.size();
+        }
         else
         {
+            int total_pairs = 0;
             double nominator = 0.0;
-            double total_pairs = 0.0;
+            double denominator = 0.0;
 
-    		for(int i = 0; i < rl.size(); i++) {
-                RankList this_rl = rl.get(i);
-
-                double[] order = new double[this_rl.size()];
-                double[] values = new double[this_rl.size()];
-
-        		for(int j = 0; j < this_rl.size(); j++)
-        		{
-                    order[j] = -1 * j;
-                    values[j] = this_rl.get(j).getLabel();
-        		}
-
-                double[] ktau = KendallsCorrelation.correlation(order, values);
-                nominator += ktau[0];
-                total_pairs += ktau[1];
+    		for(int i = 0; i < rl.size(); i++)
+            {
+                total_pairs = countTotalPairs(rl.get(i));
+                nominator += total_pairs - 2 * countMisorderedPairs(rl.get(i));
+                denominator += total_pairs;
             }
-    		return nominator/total_pairs;
+    		return nominator/denominator;
         }
 	}
 
@@ -84,18 +73,38 @@ public class KTAUScorer extends MetricScorer {
 	 */
 	public double score(RankList rl)
 	{
-        double[] order = new double[rl.size()];
-        double[] values = new double[rl.size()];
-
-		for(int i = 0; i < rl.size(); i++)
-		{
-            order[i] = -1 * i;
-            values[i] = rl.get(i).getLabel();
-		}
-
-        double[] ktau = KendallsCorrelation.correlation(order, values);
-		return ktau[0] / ktau[1];
+        return 1.0 - 2 * countMisorderedPairs(rl) / countTotalPairs(rl);
 	}
+
+    /**
+     * Calculates the number of misorderd pairs.
+     * rl must be in order of the prediction
+    */
+    public int countMisorderedPairs(RankList rl) {
+		int misord = 0;
+
+		for(int k = 0; k < rl.size() - 1; k++)
+			for(int l = k + 1; l < rl.size(); l++)
+				if(rl.get(k).getLabel() < rl.get(l).getLabel())
+					misord++;
+
+		return misord;
+    }
+
+    /**
+     * Calculates the total number of valid pairs (i.e. distinct values)
+    */
+    public int countTotalPairs(RankList rl) {
+		int totpair = 0;
+
+		for(int k = 0; k < rl.size() - 1; k++)
+			for(int l = k + 1; l < rl.size(); l++)
+				if(rl.get(k).getLabel() != rl.get(l).getLabel())
+					totpair++;
+
+		return totpair;
+    }
+
 	public String name()
 	{
 		return "KTAU";
@@ -117,29 +126,20 @@ public class KTAUScorer extends MetricScorer {
 				labels[i] = 0;
 			relCount[i] = count;
 		}
-		int rdCount = 0;//total number of relevant documents
-		if(relDocCount != null)//if an external qrels file is specified
-		{
-			Integer it = relDocCount.get(rl.getID());
-			if(it != null)
-				rdCount = it;
-		}
-		else
-			rdCount = count;
 
 		double[][] changes = new double[rl.size()][];
-		for(int i=0;i<rl.size();i++)
+		for(int i = 0; i < rl.size(); i++)
 		{
 			changes[i] = new double[rl.size()];
 			Arrays.fill(changes[i], 0);
 		}
 
-		if(rdCount == 0 || count == 0)
+		if(count == 0)
 			return changes;//all "0"
 
-		for(int i=0;i<rl.size()-1;i++)
+		for(int i = 0; i < rl.size() - 1; i++)
 		{
-			for(int j=i+1;j<rl.size();j++)
+			for(int j = i + 1; j < rl.size(); j++)
 			{
 				double change = 0;
 				if(labels[i] != labels[j])
@@ -148,11 +148,11 @@ public class KTAUScorer extends MetricScorer {
 					change += ((double)((relCount[i]+diff)*labels[j] - relCount[i]*labels[i])) / (i+1);
 					for(int k=i+1;k<=j-1;k++)
 						if(labels[k] > 0)
-							change += ((double)diff) / (k+1);
-					change += ((double)(-relCount[j]*diff)) / (j+1);
+							change += ((double)diff) / (k + 1);
+					change += ((double)(-relCount[j] * diff)) / (j + 1);
 					//It is equivalent to:  change += ((double)(relCount[j]*labels[i] - relCount[j]*labels[j])) / (j+1);
 				}
-				changes[j][i] = changes[i][j] = change/rdCount;
+				changes[j][i] = changes[i][j] = change/count;
 			}
 		}
 		return changes;
