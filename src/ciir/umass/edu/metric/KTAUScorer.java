@@ -12,6 +12,7 @@
 package ciir.umass.edu.metric;
 
 import ciir.umass.edu.learning.RankList;
+import ciir.umass.edu.learning.DataPoint;
 import ciir.umass.edu.utilities.RankLibError;
 
 import java.io.BufferedReader;
@@ -21,6 +22,8 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.IntStream;
+import java.lang.ArithmeticException;
 
 /**
  * @author saladi
@@ -45,25 +48,20 @@ public class KTAUScorer extends MetricScorer {
 	public double score(List<RankList> rl)
 	{
         if(k == 1)
-        {
-    		double score = 0.0;
-    		for(int i = 0; i < rl.size(); i++)
-    			score += 1.0 - 2 * countMisorderedPairs(rl.get(i)) / countTotalPairs(rl.get(i));
-    		return score/rl.size();
-        }
+    		return super.score(rl);
         else
         {
-            int total_pairs = 0;
-            double nominator = 0.0;
-            double denominator = 0.0;
+            int[] stats = new int[2];
+            int nominator = 0;
+            int denominator = 0;
 
     		for(int i = 0; i < rl.size(); i++)
             {
-                total_pairs = countTotalPairs(rl.get(i));
-                nominator += total_pairs - 2 * countMisorderedPairs(rl.get(i));
-                denominator += total_pairs;
+                stats = countTotalMisorderedPairs(rl.get(i));
+                nominator += stats[0] - 2 * stats[1];
+                denominator += stats[0];
             }
-    		return nominator/denominator;
+    		return (double)nominator/denominator;
         }
 	}
 
@@ -73,88 +71,96 @@ public class KTAUScorer extends MetricScorer {
 	 */
 	public double score(RankList rl)
 	{
-        return 1.0 - 2 * countMisorderedPairs(rl) / countTotalPairs(rl);
+        try {
+            int[] stats = countTotalMisorderedPairs(rl);
+            // System.out.println("total_pairs:" + stats[0] + "; misord:" + stats[1]);
+            return 1 - 2.0 * stats[1] / stats[0];
+        } catch (ArithmeticException e) {
+            // if no valid pairs (i.e. divide by zero), then this grouping
+            // is not informative
+            return 0;
+        }
 	}
 
     /**
-     * Calculates the number of misorderd pairs.
-     * rl must be in order of the prediction
+     * Calculates the number of valid (i.e. distinct values) and misorderd pairs
+     * rl must be in order of the prediction for correct calculation of misordered
+     * pairs (smaller index = higher ranking)
     */
-    public int countMisorderedPairs(RankList rl) {
-		int misord = 0;
+    public int[] countTotalMisorderedPairs(RankList rl) {
+        // 0: total pairs; 1: misordered pairs
+		int[] stats = {0, 0};
 
 		for(int k = 0; k < rl.size() - 1; k++)
 			for(int l = k + 1; l < rl.size(); l++)
-				if(rl.get(k).getLabel() < rl.get(l).getLabel())
-					misord++;
-
-		return misord;
-    }
-
-    /**
-     * Calculates the total number of valid pairs (i.e. distinct values)
-    */
-    public int countTotalPairs(RankList rl) {
-		int totpair = 0;
-
-		for(int k = 0; k < rl.size() - 1; k++)
-			for(int l = k + 1; l < rl.size(); l++)
-				if(rl.get(k).getLabel() != rl.get(l).getLabel())
-					totpair++;
-
-		return totpair;
+				if(rl.get(k).getLabel() != rl.get(l).getLabel()) {
+					stats[0]++;
+    				if(rl.get(k).getLabel() < rl.get(l).getLabel())
+    					stats[1]++;
+                }
+		return stats;
     }
 
 	public String name()
 	{
 		return "KTAU";
 	}
+    /**
+     * higher label is better, lower index is better
+     */
 	public double[][] swapChange(RankList rl)
 	{
-		//NOTE: Compute swap-change *IGNORING* K (consider the entire ranked list)
-		int[] relCount = new int[rl.size()];
-		int[] labels = new int[rl.size()];
-		int count = 0;
-		for(int i=0;i<rl.size();i++)
-		{
-			if(rl.get(i).getLabel() > 0)//relevant
-			{
-				labels[i] = 1;
-				count++;
-			}
-			else
-				labels[i] = 0;
-			relCount[i] = count;
-		}
+		byte[][] is_ord = new byte[rl.size()][rl.size()];
+		double[][] changes = new double[rl.size()][rl.size()];
 
-		double[][] changes = new double[rl.size()][];
-		for(int i = 0; i < rl.size(); i++)
-		{
-			changes[i] = new double[rl.size()];
-			Arrays.fill(changes[i], 0);
-		}
-
-		if(count == 0)
-			return changes;//all "0"
-
+        // fill with initial ordering
+        // init_tau is actually concordant - disconcorant pairs, i.e. Kendall's distance
+        double init_kend = 0;
 		for(int i = 0; i < rl.size() - 1; i++)
-		{
 			for(int j = i + 1; j < rl.size(); j++)
-			{
-				double change = 0;
-				if(labels[i] != labels[j])
-				{
-					int diff = labels[j]-labels[i];
-					change += ((double)((relCount[i]+diff)*labels[j] - relCount[i]*labels[i])) / (i+1);
-					for(int k=i+1;k<=j-1;k++)
-						if(labels[k] > 0)
-							change += ((double)diff) / (k + 1);
-					change += ((double)(-relCount[j] * diff)) / (j + 1);
-					//It is equivalent to:  change += ((double)(relCount[j]*labels[i] - relCount[j]*labels[j])) / (j+1);
-				}
-				changes[j][i] = changes[i][j] = change/count;
-			}
-		}
+				if(rl.get(i).getLabel() > rl.get(j).getLabel())
+                    init_kend += is_ord[i][j] = 1;
+                else if (rl.get(i).getLabel() < rl.get(j).getLabel())
+                    init_kend += is_ord[i][j] = -1;
+
+        // Calculate changes upon swaps
+		for(int i = 0; i < rl.size() - 1; i++)
+			for(int j = i + 1; j < rl.size(); j++) {
+                swapRankList(rl, i, j); // do swap
+
+                // recalculate change in ordering
+                int delta = 0;
+        		for(int k = i + 1; k < rl.size(); k++) // for row i
+                    delta += calcChange(is_ord[i][k], rl.get(i).getLabel(), rl.get(k).getLabel());
+        		for(int k = 0; k < i; k++) // for col i
+                    delta += calcChange(is_ord[k][i], rl.get(k).getLabel(), rl.get(i).getLabel());
+        		for(int k = j + 1; k < rl.size(); k++) // for row j
+                    delta += calcChange(is_ord[j][k], rl.get(j).getLabel(), rl.get(k).getLabel());
+        		for(int k = 0; k < j; k++) // for col j
+                    delta += calcChange(is_ord[k][j], rl.get(k).getLabel(), rl.get(j).getLabel());
+
+                // overcounting of pair i, j
+                delta -= calcChange(is_ord[i][j], rl.get(i).getLabel(), rl.get(j).getLabel());
+
+		        changes[j][i] = changes[i][j] = delta/init_kend;
+
+                swapRankList(rl, i, j); // swap back
+            }
 		return changes;
 	}
+
+    public int calcChange(int orig, float higher_score, float lower_score) {
+        if (orig == 1 && higher_score < lower_score)
+            return -2;
+        else if (orig == -1 && higher_score > lower_score)
+            return 2;
+        return 0;
+    }
+
+	public void swapRankList(RankList rl, int i, int j)
+	{
+        DataPoint temp = rl.get(i);
+        rl.set(i, rl.get(j));
+        rl.set(j, temp);
+    }
 }
