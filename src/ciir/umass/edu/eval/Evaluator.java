@@ -1,7 +1,7 @@
 /*===============================================================================
  * Copyright (c) 2010-2016 University of Massachusetts.  All Rights Reserved.
  *
- * Use of the RankLib package is subject to the terms of the software license set 
+ * Use of the RankLib package is subject to the terms of the software license set
  * forth in the LICENSE file included with this software, and also available at
  * http://people.cs.umass.edu/~vdang/ranklib_license.html
  *===============================================================================
@@ -31,11 +31,11 @@ import java.util.List;
 
 /**
  * @author vdang
- * 
- * This class is meant to provide the interface to run and compare different ranking algorithms. 
+ *
+ * This class is meant to provide the interface to run and compare different ranking algorithms.
  * It lets users specify general parameters (e.g. what algorithm to run, training/testing/validating
- *  data, etc.) as well as algorithm-specific parameters. Type "java -jar bin/RankLib.jar" at the 
- *  command-line to see all the options. 
+ *  data, etc.) as well as algorithm-specific parameters. Type "java -jar bin/RankLib.jar" at the
+ *  command-line to see all the options.
  */
 public class Evaluator {
 
@@ -43,16 +43,16 @@ public class Evaluator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
+
 		String[] rType = new String[] { "MART", "RankNet", "RankBoost", "AdaRank", "Coordinate Ascent",
-                                                "LambdaRank", "LambdaMART", "ListNet", "Random Forests", 
+                                                "LambdaRank", "LambdaMART", "ListNet", "Random Forests",
                                                 "Linear Regression" };
-		RANKER_TYPE[] rType2 = new RANKER_TYPE[] { RANKER_TYPE.MART, RANKER_TYPE.RANKNET, 
-                                                           RANKER_TYPE.RANKBOOST, RANKER_TYPE.ADARANK, 
-                                                           RANKER_TYPE.COOR_ASCENT, RANKER_TYPE.LAMBDARANK, 
-                                                           RANKER_TYPE.LAMBDAMART, RANKER_TYPE.LISTNET, 
+		RANKER_TYPE[] rType2 = new RANKER_TYPE[] { RANKER_TYPE.MART, RANKER_TYPE.RANKNET,
+                                                           RANKER_TYPE.RANKBOOST, RANKER_TYPE.ADARANK,
+                                                           RANKER_TYPE.COOR_ASCENT, RANKER_TYPE.LAMBDARANK,
+                                                           RANKER_TYPE.LAMBDAMART, RANKER_TYPE.LISTNET,
                                                            RANKER_TYPE.RANDOM_FOREST, RANKER_TYPE.LINEAR_REGRESSION };
-		
+
 		String trainFile = "";
 		String featureDescriptionFile = "";
 		float ttSplit = 0;//train-test split
@@ -71,12 +71,12 @@ public class Evaluator {
 		String kcvModelFile = "";
 		String rankFile = "";
 		String prpFile = "";
-		
+
 		int nThread = -1; // nThread = #cpu-cores
 		//for my personal use
 		String indriRankingFile = "";
 		String scoreFile = "";
-		
+
 		if(args.length < 2)
 		{
 			System.out.println("Usage: java -jar RankLib.jar <Params>");
@@ -97,12 +97,12 @@ public class Evaluator {
 			System.out.println("\t\t\t\tIf not specified, all features will be used.");
 			//System.out.println("\t[ -metric2t <metric> ]\tMetric to optimize on the training data. Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, BEST@k, ERR@k (default=" + trainMetric + ")");
 			System.out.println("\t[ -metric2t <metric> ]\tMetric to optimize on the training data.  " +
-                                           "Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, ERR@k, KTAU@k (default=" + trainMetric + ")");
+                                           "Supported: MAP, NDCG@k, DCG@k, P@k, RR@k, ERR@k, PEAR, SPEAR, KTAU (default=" + trainMetric + ")");
 			System.out.println("\t[ -gmax <label> ]\tHighest judged relevance label. It affects the calculation of ERR " +
                                            "(default=" + (int)SimpleMath.logBase2(ERRScorer.MAX) + ", i.e. 5-point scale {0,1,2,3,4})");
 			System.out.println("\t[ -qrel <file> ]\tTREC-style relevance judgment file. It only affects MAP and NDCG (default=unspecified)");
 			System.out.println("\t[ -silent ]\t\tDo not print progress messages (which are printed by default)");
-			
+
 			System.out.println("");
 			//System.out.println("        Use the entire specified training data");
 			System.out.println("\t[ -validate <file> ]\tSpecify if you want to tune your system on the validation data (default=unspecified)");
@@ -110,44 +110,44 @@ public class Evaluator {
 			System.out.println("\t[ -tvs <x \\in [0..1]> ]\tIf you don't have separate validation data, use this to set train-validation split to be (x)(1.0-x)");
 
 			System.out.println("\t[ -save <model> ]\tSave the model learned (default=not-save)");
-			
+
 			System.out.println("");
 			System.out.println("\t[ -test <file> ]\tSpecify if you want to evaluate the trained model on this data (default=unspecified)");
 			System.out.println("\t[ -tts <x \\in [0..1]> ]\tSet train-test split to be (x)(1.0-x). -tts will override -tvs");
 			System.out.println("\t[ -metric2T <metric> ]\tMetric to evaluate on the test data (default to the same as specified for -metric2t)");
-			
+
 			System.out.println("");
 			System.out.println("\t[ -norm <method>]\tNormalize all feature vectors (default=no-normalization). Method can be:");
 			System.out.println("\t\t\t\tsum: normalize each feature by the sum of all its values");
 			System.out.println("\t\t\t\tzscore: normalize each feature by its mean/standard deviation");
 			System.out.println("\t\t\t\tlinear: normalize each feature by its min/max values");
-			
+
 			//System.out.println("");
 			//System.out.println("\t[ -sparse ]\t\tUse sparse representation for all feature vectors (default=dense)");
-			
+
 			System.out.println("");
 			System.out.println("\t[ -kcv <k> ]\t\tSpecify if you want to perform k-fold cross validation using the specified training data (default=NoCV)");
 			System.out.println("\t\t\t\t-tvs can be used to further reserve a portion of the training data in each fold for validation");
 			//System.out.println("\t\t\t\tData for each fold is created from sequential partitions of the training data.");
 			//System.out.println("\t\t\t\tRandomized partitioning can be done by shuffling the training data in advance.");
 			//System.out.println("\t\t\t\tType \"java -cp bin/RankLib.jar ciir.umass.edu.feature.FeatureManager\" for help with shuffling.");
-			
+
 			System.out.println("\t[ -kcvmd <dir> ]\tDirectory for models trained via cross-validation (default=not-save)");
 			System.out.println("\t[ -kcvmn <model> ]\tName for model learned in each fold. It will be prefix-ed with the fold-number (default=empty)");
-			
+
 			System.out.println("");
 			System.out.println("    [-] RankNet-specific parameters");
 			System.out.println("\t[ -epoch <T> ]\t\tThe number of epochs to train (default=" + RankNet.nIteration + ")");
 			System.out.println("\t[ -layer <layer> ]\tThe number of hidden layers (default=" + RankNet.nHiddenLayer + ")");
 			System.out.println("\t[ -node <node> ]\tThe number of hidden nodes per layer (default=" + RankNet.nHiddenNodePerLayer + ")");
 			System.out.println("\t[ -lr <rate> ]\t\tLearning rate (default=" + (new DecimalFormat("###.########")).format(RankNet.learningRate) + ")");
-			
+
 			System.out.println("");
 			System.out.println("    [-] RankBoost-specific parameters");
 			System.out.println("\t[ -round <T> ]\t\tThe number of rounds to train (default=" + RankBoost.nIteration + ")");
-			System.out.println("\t[ -tc <k> ]\t\tNumber of threshold candidates to search. -1 to use all feature values (default=" + 
+			System.out.println("\t[ -tc <k> ]\t\tNumber of threshold candidates to search. -1 to use all feature values (default=" +
                                            RankBoost.nThreshold + ")");
-			
+
 			System.out.println("");
 			System.out.println("    [-] AdaRank-specific parameters");
 			System.out.println("\t[ -round <T> ]\t\tThe number of rounds to train (default=" + AdaRank.nIteration + ")");
@@ -168,11 +168,11 @@ public class Evaluator {
 			System.out.println("\t[ -tree <t> ]\t\tNumber of trees (default=" + LambdaMART.nTrees + ")");
 			System.out.println("\t[ -leaf <l> ]\t\tNumber of leaves for each tree (default=" + LambdaMART.nTreeLeaves + ")");
 			System.out.println("\t[ -shrinkage <factor> ]\tShrinkage, or learning rate (default=" + LambdaMART.learningRate + ")");
-			System.out.println("\t[ -tc <k> ]\t\tNumber of threshold candidates for tree spliting. -1 to use all feature values (default=" + 
+			System.out.println("\t[ -tc <k> ]\t\tNumber of threshold candidates for tree spliting. -1 to use all feature values (default=" +
                                            LambdaMART.nThreshold + ")");
 			System.out.println("\t[ -mls <n> ]\t\tMin leaf support -- minimum % of docs each leaf has to contain (default=" +
                                            LambdaMART.minLeafSupport + ")");
-			System.out.println("\t[ -estop <e> ]\t\tStop early when no improvement is observed on validaton data in e consecutive rounds (default=" + 
+			System.out.println("\t[ -estop <e> ]\t\tStop early when no improvement is observed on validaton data in e consecutive rounds (default=" +
                                            LambdaMART.nRoundToStopEarly + ")");
 
 			System.out.println("");
@@ -216,7 +216,7 @@ public class Evaluator {
 			System.out.println("");
 			return;
 		}
-		
+
 		for(int i=0;i<args.length;i++)
 		{
 		    if (args[i].equalsIgnoreCase ("-train"))
@@ -230,9 +230,9 @@ public class Evaluator {
 			else if (args[i].equalsIgnoreCase ("-metric2T"))
 				testMetric = args[++i];
 			else if (args[i].equalsIgnoreCase ("-gmax"))
-				ERRScorer.MAX = Math.pow(2, Double.parseDouble(args[++i]));			
+				ERRScorer.MAX = Math.pow(2, Double.parseDouble(args[++i]));
 			else if (args[i].equalsIgnoreCase ("-qrel"))
-				qrelFile = args[++i];			
+				qrelFile = args[++i];
 			else if (args[i].equalsIgnoreCase ("-tts"))
 				ttSplit = Float.parseFloat(args[++i]);
 			else if (args[i].equalsIgnoreCase ("-tvs"))
@@ -282,7 +282,7 @@ public class Evaluator {
 			else if (args[i].equalsIgnoreCase ("-rank"))
 				rankFile = args[++i];
 			else if (args[i].equalsIgnoreCase ("-score"))
-				scoreFile = args[++i];			
+				scoreFile = args[++i];
 
 			//Ranker-specific parameters
 			//RankNet
@@ -298,28 +298,28 @@ public class Evaluator {
 			else if (args[i].equalsIgnoreCase ("-lr"))
 			{
 				RankNet.learningRate = Double.parseDouble(args[++i]);
-				ListNet.learningRate = Neuron.learningRate; 
+				ListNet.learningRate = Neuron.learningRate;
 			}
-			
+
 			//RankBoost
 			else if (args[i].equalsIgnoreCase ("-tc"))
 			{
 				RankBoost.nThreshold = Integer.parseInt(args[++i]);
 				LambdaMART.nThreshold = Integer.parseInt(args[i]);
 			}
-			
+
 			//AdaRank
 			else if (args[i].equalsIgnoreCase ("-noeq"))
 				AdaRank.trainWithEnqueue = false;
 			else if (args[i].equalsIgnoreCase ("-max"))
 				AdaRank.maxSelCount = Integer.parseInt(args[++i]);
-			
+
 			//COORDINATE ASCENT
 			else if (args[i].equalsIgnoreCase ("-r"))
 				CoorAscent.nRestart = Integer.parseInt(args[++i]);
 			else if (args[i].equalsIgnoreCase ("-i"))
 				CoorAscent.nMaxIteration = Integer.parseInt(args[++i]);
-			
+
 			//ranker-shared parameters
 			else if (args[i].equalsIgnoreCase ("-round"))
 			{
@@ -336,7 +336,7 @@ public class Evaluator {
 				AdaRank.tolerance = Double.parseDouble(args[++i]);
 				CoorAscent.tolerance = Double.parseDouble(args[i]);
 			}
-			
+
 			//MART / LambdaMART / Random forest
 			else if (args[i].equalsIgnoreCase ("-tree"))
 			{
@@ -363,7 +363,7 @@ public class Evaluator {
 			//for debugging
 			else if (args[i].equalsIgnoreCase ("-gcc"))
 				LambdaMART.gcCycle = Integer.parseInt(args[++i]);
-			
+
 			//Random forest
 			else if (args[i].equalsIgnoreCase ("-bag"))
 				RFRanker.nBag = Integer.parseInt(args[++i]);
@@ -381,13 +381,13 @@ public class Evaluator {
 					throw RankLibError.create(rType[rt] + " cannot be bagged. Random Forests only supports MART/LambdaMART.");
 				}
 			}
-			
+
 			else if (args[i].equalsIgnoreCase ("-L2"))
 				LinearRegRank.lambda = Double.parseDouble(args[++i]);
-			
+
 			else if (args[i].equalsIgnoreCase ("-thread"))
 				nThread = Integer.parseInt(args[++i]);
-			
+
 			/////////////////////////////////////////////////////
 			// These parameters are *ONLY* for my personal use
 			/////////////////////////////////////////////////////
@@ -413,7 +413,7 @@ public class Evaluator {
 
 		if(testMetric.compareTo("")==0)
 			testMetric = trainMetric;
-		
+
 		System.out.println("");
 		System.out.println((keepOrigFeatures)?"Keep orig. features":"Discard orig. features");
 		Evaluator e = new Evaluator(rType2[rankerType], trainMetric, testMetric);
@@ -421,7 +421,7 @@ public class Evaluator {
 		if(trainFile.compareTo("")!=0)
 		{
 			System.out.println("Training data:\t" + trainFile);
-			
+
 			//print out parameter settings
 			if(foldCV != -1)
 			{
@@ -435,8 +435,8 @@ public class Evaluator {
 					System.out.println("Test data:\t" + testFile);
 				else if(ttSplit > 0)//choose to split training data into train and test
 					System.out.println("Train-Test split: " + ttSplit);
-				
-				if(validationFile.compareTo("")!=0)//the user has specified the validation set 
+
+				if(validationFile.compareTo("")!=0)//the user has specified the validation set
 					System.out.println("Validation data:\t" + validationFile);
 				else if(ttSplit <= 0 && tvSplit > 0)
 					System.out.println("Train-Validation split: " + tvSplit);
@@ -460,19 +460,19 @@ public class Evaluator {
 				System.out.println("Models directory: " + kcvModelDir);
 
 			if(kcvModelFile.compareTo("")!=0)
-				System.out.println("Models' name: " + kcvModelFile);				
+				System.out.println("Models' name: " + kcvModelFile);
 
 			if(modelFile.compareTo("")!=0)
 				System.out.println("Model file: " + modelFile);
 			//System.out.println("#threads:\t" + nThread);
-			
+
 			System.out.println("");
 			System.out.println("[+] " + rType[rankerType] + "'s Parameters:");
 			RankerFactory rf = new RankerFactory();
-			
+
 			rf.createRanker(rType2[rankerType]).printParameters();
 			System.out.println("");
-			
+
 			//starting to do some work
 			if(foldCV != -1)
 			{
@@ -486,7 +486,7 @@ public class Evaluator {
 					kcvModelFile = "kcv";
 			        }
                                 else if(kcvModelDir.compareTo("") == 0 && kcvModelFile.compareTo("") != 0) {
-					kcvModelDir = "kcvmodels";  
+					kcvModelDir = "kcvmodels";
 				}
 
                                 //- models won't be saved if kcvModelDir=""   [OBSOLETE]
@@ -541,7 +541,7 @@ public class Evaluator {
 				System.out.println("Test metric:\t" + testMetric);
 				if(testMetric.startsWith("ERR"))
 					System.out.println("Highest relevance label (to compute ERR): " + (int)SimpleMath.logBase2(ERRScorer.MAX));
-				
+
 				if(savedModelFile.compareTo("") != 0)
 				{
 					if(savedModelFiles.size() > 1)//models trained via cross-validation
@@ -570,14 +570,14 @@ public class Evaluator {
 	public static boolean normalize = false;
 	public static Normalizer nml = new SumNormalizor();
 	public static String modelFile = "";
- 	
+
  	public static String qrelFile = "";//measure such as NDCG and MAP requires "complete" judgment.
  	//The relevance labels attached to our samples might be only a subset of the entire relevance judgment set.
  	//If we're working on datasets like Letor/Web10K or Yahoo! LTR, we can totally ignore this parameter.
  	//However, if we sample top-K documents from baseline run (e.g. query-likelihood) to create training data for TREC collections,
  	//there's a high chance some relevant document (the in qrel file TREC provides) does not appear in our top-K list -- thus the calculation of
  	//MAP and NDCG is no longer precise. If so, specify that "external" relevance judgment here (via the -qrel cmd parameter)
- 	
+
  	//tmp settings, for personal use
  	public static String newFeatureFile = "";
  	public static boolean keepOrigFeatures = false;
@@ -585,11 +585,11 @@ public class Evaluator {
 
  	protected RankerFactory rFact = new RankerFactory();
 	protected MetricScorerFactory mFact = new MetricScorerFactory();
-	
+
 	protected MetricScorer trainScorer = null;
 	protected MetricScorer testScorer = null;
 	protected RANKER_TYPE type = RANKER_TYPE.MART;
-	
+
 
 	public Evaluator(RANKER_TYPE rType, METRIC trainMetric, METRIC testMetric)
 	{
@@ -636,7 +636,7 @@ public class Evaluator {
 		trainScorer = mFact.createScorer(metric, k);
 		if(qrelFile.compareTo("") != 0)
 			trainScorer.loadExternalRelevanceJudgment(qrelFile);
-		testScorer = trainScorer;		
+		testScorer = trainScorer;
 	}
 
 
@@ -650,12 +650,12 @@ public class Evaluator {
 			trainScorer.loadExternalRelevanceJudgment(qrelFile);
 			testScorer.loadExternalRelevanceJudgment(qrelFile);
 		}
-	}	
-	
+	}
 
-	public List<RankList> readInput(String inputFile)	
+
+	public List<RankList> readInput(String inputFile)
 	{
-		return FeatureManager.readInput(inputFile, mustHaveRelDoc, useSparseRepresentation);		
+		return FeatureManager.readInput(inputFile, mustHaveRelDoc, useSparseRepresentation);
 	}
 
 
@@ -694,7 +694,7 @@ public class Evaluator {
 		return testScorer.score(l);
 	}
 
-	
+
 	/**
 	 * Evaluate the currently selected ranking algorithm using <training data, validation data, testing data and the defined features>.
 	 * @param trainFile
@@ -705,21 +705,21 @@ public class Evaluator {
 	public void evaluate(String trainFile, String validationFile, String testFile, String featureDefFile)
 	{
 		List<RankList> train = readInput(trainFile);//read input
-		
+
 		List<RankList> validation = null;
 		//if(validationFile.compareTo("")!=0)
                 if (!validationFile.isEmpty())
 			validation = readInput(validationFile);
-		
+
 		List<RankList> test = null;
 		//if(testFile.compareTo("")!=0)
                 if (!testFile.isEmpty())
 			test = readInput(testFile);
-		
+
 		int[] features = readFeature(featureDefFile);//read features
 		if(features == null)//no features specified ==> use all features in the training file
 			features = FeatureManager.getFeatureFromSampleVector(train);
-		
+
 		if(normalize)
 		{
 			normalize(train, features);
@@ -727,11 +727,11 @@ public class Evaluator {
 				normalize(validation, features);
 			if(test != null)
 				normalize(test, features);
-		}		
-		
+		}
+
 		RankerTrainer trainer = new RankerTrainer();
 		Ranker ranker = trainer.train(type, train, validation, features, trainScorer);
-		
+
 		if(test != null)
 		{
 			double rankScore = evaluate(ranker, test);
@@ -770,9 +770,9 @@ public class Evaluator {
 
 		RankerTrainer trainer = new RankerTrainer();
 		Ranker ranker = trainer.train(type, trainingData, validation, features, trainScorer);
-		
+
 		double rankScore = evaluate(ranker, testData);
-		
+
 		System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
 		if(modelFile.compareTo("")!=0)
 		{
@@ -805,13 +805,13 @@ public class Evaluator {
 			if(normalize)
 				normalize(test, features);
 		}
-		
+
 		RankerTrainer trainer = new RankerTrainer();
 		Ranker ranker = trainer.train(type, train, validation, features, trainScorer);
-		
+
 		if(test != null)
 		{
-			double rankScore = evaluate(ranker, test);		
+			double rankScore = evaluate(ranker, test);
 			System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
 		}
 		if(modelFile.compareTo("")!=0)
@@ -873,13 +873,13 @@ public class Evaluator {
 				normalizeAll(testData, features);
 			}
 		}
-		
+
 		Ranker ranker = null;
 		double scoreOnTrain = 0.0;
 		double scoreOnTest = 0.0;
 		double totalScoreOnTest = 0.0;
 		int totalTestSampleSize = 0;
-		
+
 		double[][] scores = new double[nFold][];
 		for(int i=0;i<nFold;i++)
 			scores[i] = new double[]{0.0, 0.0};
@@ -890,10 +890,10 @@ public class Evaluator {
 			if(tvs > 0)
 				vali = validationData.get(i);
 			List<RankList> test = testData.get(i);
-			
+
 			RankerTrainer trainer = new RankerTrainer();
 			ranker = trainer.train(type, train, vali, features, trainScorer);
-			
+
 			double s2 = evaluate(ranker, test);
 			scoreOnTrain += ranker.getScoreOnTrainingData();
 			scoreOnTest += s2;
@@ -903,12 +903,12 @@ public class Evaluator {
 			//save performance in each fold
 			scores[i][0] = ranker.getScoreOnTrainingData();
 			scores[i][1] = s2;
-			
+
 			//if(modelDir.compareTo("") != 0)
                         if (!modelDir.isEmpty())
 			{
 				ranker.save(FileUtils.makePathStandard(modelDir) + "f" + (i+1) + "." + modelFile);
-				System.out.println("Fold-" + (i+1) + " model saved to: " + modelFile);				
+				System.out.println("Fold-" + (i+1) + " model saved to: " + modelFile);
 			}
 		}
 		System.out.println("Summary:");
@@ -921,7 +921,7 @@ public class Evaluator {
 		System.out.println("----------------------------------");
 		System.out.println("Total\t|   " + "\t" + "\t|  " + SimpleMath.round(totalScoreOnTest/totalTestSampleSize, 4) + "\t");
 	}
-	
+
 
 	/**
 	 * Evaluate the performance (in -metric2T) of the input rankings
@@ -949,7 +949,7 @@ public class Evaluator {
 		}
 		rankScore /= test.size();
 		ids.add("all");
-		scores.add(rankScore);		
+		scores.add(rankScore);
 		System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
 
 		//if(prpFile.compareTo("") != 0)
@@ -962,10 +962,10 @@ public class Evaluator {
 
 
 	/**
-	 * Evaluate the performance (in -metric2T) of a pre-trained model. Save its performance on each of the ranked list if this is specified. 
+	 * Evaluate the performance (in -metric2T) of a pre-trained model. Save its performance on each of the ranked list if this is specified.
 	 * @param modelFile Pre-trained model
 	 * @param testFile Test data
-	 * @param prpFile Per-ranked list performance file: Model's performance on each of the ranked list. These won't be saved if prpFile="". 
+	 * @param prpFile Per-ranked list performance file: Model's performance on each of the ranked list. These won't be saved if prpFile="".
 	 */
 	public void test(String modelFile, String testFile, String prpFile)
 	{
@@ -974,7 +974,7 @@ public class Evaluator {
 		List<RankList> test = readInput(testFile);
 		if(normalize)
 			normalize(test, features);
-		
+
 		double rankScore = 0.0;
 		List<String> ids = new ArrayList<>();
 		List<Double> scores = new ArrayList<>();
@@ -987,7 +987,7 @@ public class Evaluator {
 		}
 		rankScore /= test.size();
 		ids.add("all");
-		scores.add(rankScore);		
+		scores.add(rankScore);
 		System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
 
 		//if(prpFile.compareTo("") != 0)
@@ -1125,7 +1125,7 @@ public class Evaluator {
 				rl = new RankList(rl, MergeSorter.sort(s, false));
 				test.set(i, rl);
 			}
-			
+
 			double rankScore = evaluate(null, test);
 			System.out.println(testScorer.name() + " on test data: " + SimpleMath.round(rankScore, 4));
 		} catch (IOException e) {
@@ -1135,7 +1135,7 @@ public class Evaluator {
 
 
 	/**
-	 * Write the model's score for each of the documents in a test rankings. 
+	 * Write the model's score for each of the documents in a test rankings.
 	 * @param modelFile Pre-trained model
 	 * @param testFile Test data
 	 * @param outputFile Output file
@@ -1147,7 +1147,7 @@ public class Evaluator {
 		List<RankList> test = readInput(testFile);
 		if(normalize)
 			normalize(test, features);
-		
+
 		try {
 			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 			for (RankList l : test) {
@@ -1312,7 +1312,7 @@ public class Evaluator {
 
 	/**
 	 * Use k pre-trained models to re-rank the test rankings. Test rankings will be splitted into k fold, where k=|models|.
-	 * Each model will be used to rank the data from the corresponding fold. Save the output ranking in indri's run format. 
+	 * Each model will be used to rank the data from the corresponding fold. Save the output ranking in indri's run format.
 	 * @param modelFiles
 	 * @param testFile
 	 * @param indriRanking
@@ -1352,7 +1352,7 @@ public class Evaluator {
 						out.write(str);
 						out.newLine();
 					}
-				}				
+				}
 			}
 			out.close();
 		}
@@ -1360,7 +1360,7 @@ public class Evaluator {
 		{
 			throw RankLibError.create("Error in Evaluator::rank(): ", ex);
 		}
-	}	
+	}
 
 
 	/**
@@ -1400,7 +1400,7 @@ public class Evaluator {
 						out.write(str);
 						out.newLine();
 					}
-				}				
+				}
 			}
 			out.close();
 		}
@@ -1417,7 +1417,7 @@ public class Evaluator {
 	 * @param featureDefFile Feature definition file (if it's an empty string, all features in the input file will be used)
 	 * @param percentTrain How much of the input data will be used for training? (the remaining will be reserved for test/validation)
 	 * @param normalize Whether to do normalization.
-	 * @param trainingData [Output] Training data (after splitting) 
+	 * @param trainingData [Output] Training data (after splitting)
 	 * @param testData [Output] Test (or validation) data (after splitting)
 	 * @return A list of ids of the features to be used for learning.
 	 */
@@ -1432,15 +1432,15 @@ public class Evaluator {
                 // no features specified ==> use all features in the training file
 		if(features == null)
 			features = FeatureManager.getFeatureFromSampleVector(data);
-		
+
 		if(normalize)
 			normalize(data, features);
-		
+
 		FeatureManager.prepareSplit(data, percentTrain, trainingData, testData);
 		return features;
 	}
 
-		
+
 	/**
 	 * Save systems' performance to file
 	 * @param ids Ranked list IDs.

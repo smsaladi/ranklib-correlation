@@ -1,7 +1,7 @@
 /*===============================================================================
  * Copyright (c) 2010-2012 University of Massachusetts.  All Rights Reserved.
  *
- * Use of the RankLib package is subject to the terms of the software license set 
+ * Use of the RankLib package is subject to the terms of the software license set
  * forth in the LICENSE file included with this software, and also available at
  * http://people.cs.umass.edu/~vdang/ranklib_license.html
  *===============================================================================
@@ -16,12 +16,14 @@ import java.util.HashMap;
  */
 public class MetricScorerFactory {
 
-	private static MetricScorer[] mFactory = new MetricScorer[]{new APScorer(), new KTAUScorer(), new NDCGScorer(), new DCGScorer(), new PrecisionScorer(), new ReciprocalRankScorer(), new BestAtKScorer(), new ERRScorer()};
+	private static MetricScorer[] mFactory = new MetricScorer[]{new APScorer(), new PEARScorer(), new SPEARScorer(), new KTAUScorer(), new NDCGScorer(), new DCGScorer(), new PrecisionScorer(), new ReciprocalRankScorer(), new BestAtKScorer(), new ERRScorer()};
 	private static HashMap<String, MetricScorer> map = new HashMap<String, MetricScorer>();
 
 	public MetricScorerFactory()
 	{
 		map.put("MAP", new APScorer());
+		map.put("PEAR", new PEARScorer());
+		map.put("SPEAR", new SPEARScorer());
 		map.put("KTAU", new KTAUScorer());
 		map.put("NDCG", new NDCGScorer());
 		map.put("DCG", new DCGScorer());

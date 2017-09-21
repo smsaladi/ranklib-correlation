@@ -36,11 +36,18 @@ public class KTAUScorer extends MetricScorer {
 
 	public HashMap<String, Integer> relDocCount = null;
 
-	public MetricScorer copy()
+    public KTAUScorer()
+    {
+
+    }
+	public KTAUScorer copy()
 	{
 		return new KTAUScorer();
 	}
-
+	public String name()
+	{
+		return "KTAU";
+	}
     /**
      * Compute KTAU of multiple lists by summing the inversions for each list
      * and dividing by the total number of pairs
@@ -101,10 +108,6 @@ public class KTAUScorer extends MetricScorer {
 		return stats;
     }
 
-	public String name()
-	{
-		return "KTAU";
-	}
     /**
      * higher label is better, lower index is better
      */
@@ -126,7 +129,7 @@ public class KTAUScorer extends MetricScorer {
         // Calculate changes upon swaps
 		for(int i = 0; i < rl.size() - 1; i++)
 			for(int j = i + 1; j < rl.size(); j++) {
-                swapRankList(rl, i, j); // do swap
+                rl.swap(i, j); // do swap
 
                 // recalculate change in ordering
                 int delta = 0;
@@ -144,7 +147,7 @@ public class KTAUScorer extends MetricScorer {
 
 		        changes[j][i] = changes[i][j] = delta/init_kend;
 
-                swapRankList(rl, i, j); // swap back
+                rl.swap(i, j); // swap back
             }
 		return changes;
 	}
@@ -155,12 +158,5 @@ public class KTAUScorer extends MetricScorer {
         else if (orig == -1 && higher_score > lower_score)
             return 2;
         return 0;
-    }
-
-	public void swapRankList(RankList rl, int i, int j)
-	{
-        DataPoint temp = rl.get(i);
-        rl.set(i, rl.get(j));
-        rl.set(j, temp);
     }
 }
