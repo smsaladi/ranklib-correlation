@@ -2,7 +2,7 @@
 /*===============================================================================
  * Copyright (c) 2010-2015 University of Massachusetts.  All Rights Reserved.
  *
- * Use of the RankLib package is subject to the terms of the software license set 
+ * Use of the RankLib package is subject to the terms of the software license set
  * forth in the LICENSE file included with this software, and also available at
  * http://people.cs.umass.edu/~vdang/ranklib_license.html
  *===============================================================================
@@ -34,8 +34,8 @@ import java.nio.file.attribute.PosixFilePermissions;
 
 /**
  * @author vdang
- * 
- * This class implements the generic Ranker interface. Each ranking algorithm implemented has to extend this class. 
+ *
+ * This class implements the generic Ranker interface. Each ranking algorithm implemented has to extend this class.
  */
 public abstract class Ranker {
 	public static boolean verbose = true;
@@ -45,9 +45,9 @@ public abstract class Ranker {
 	protected MetricScorer scorer = null;
 	protected double scoreOnTrainingData = 0.0;
 	protected double bestScoreOnValidationData = 0.0;
-	
+
 	protected List<RankList> validationSamples = null;
-	
+
 	protected Ranker()
 	{
 
@@ -58,16 +58,16 @@ public abstract class Ranker {
 		this.features = features;
 		this.scorer = scorer;
 	}
-	
+
 	//Utility functions
 	public void setTrainingSet(List<RankList> samples)
 	{
 		this.samples = samples;
-	
+
 	}
 	public void setFeatures(int[] features)
 	{
-		this.features = features;	
+		this.features = features;
 	}
 	public void setValidationSet(List<RankList> samples)
 	{
@@ -77,7 +77,7 @@ public abstract class Ranker {
 	{
 		this.scorer = scorer;
 	}
-	
+
 	public double getScoreOnTrainingData()
 	{
 		return scoreOnTrainingData;
@@ -91,12 +91,14 @@ public abstract class Ranker {
 	{
 		return features;
 	}
-	
+
 	public RankList rank(RankList rl)
 	{
 		double[] scores = new double[rl.size()];
-		for(int i=0;i<rl.size();i++)
+		for(int i=0;i<rl.size();i++) {
 			scores[i] = eval(rl.get(i));
+			rl.get(i).setCached(scores[i]);
+		}
 		int[] idx = MergeSorter.sort(scores, false);
 		return new RankList(rl, idx);
 	}
@@ -110,11 +112,11 @@ public abstract class Ranker {
 	}
 
         //- Create the model file directory to write models into if not already there
-	public void save(String modelFile) 
+	public void save(String modelFile)
 	{
               // Determine if the directory to write to exists.  If not, create it.
               Path parentPath = Paths.get(modelFile).toAbsolutePath().getParent();
-            
+
               // Create the directory if it doesn't exist. Give it 755 perms
                 if (Files.notExists (parentPath)) {
                      try {
@@ -124,12 +126,12 @@ public abstract class Ranker {
                      }
                      catch (Exception e) {
                           System.out.println ("Error creating kcv model file directory " + modelFile);
-		     }         
+		     }
                 }
-            
+
 		FileUtils.write(modelFile, "ASCII", model());
 	}
-	
+
 	protected void PRINT(String msg)
 	{
 		if(verbose)
@@ -173,13 +175,13 @@ public abstract class Ranker {
 	{
 		System.out.println("***** " + Runtime.getRuntime().freeMemory() + " / " + Runtime.getRuntime().maxMemory());
 	}
-	
+
 	protected void copy(double[] source, double[] target)
 	{
 		for(int j=0;j<source.length;j++)
 			target[j] = source[j];
 	}
-	
+
 	/**
 	 * HAVE TO BE OVER-RIDDEN IN SUB-CLASSES
 	 */

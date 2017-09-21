@@ -1,7 +1,7 @@
 /*===============================================================================
  * Copyright (c) 2010-2012 University of Massachusetts.  All Rights Reserved.
  *
- * Use of the RankLib package is subject to the terms of the software license set 
+ * Use of the RankLib package is subject to the terms of the software license set
  * forth in the LICENSE file included with this software, and also available at
  * http://people.cs.umass.edu/~vdang/ranklib_license.html
  *===============================================================================
@@ -18,22 +18,22 @@ import ciir.umass.edu.learning.DataPoint;
  * @author vdang
  */
 public class RegressionTree {
-	
+
 	//Parameters
 	protected int nodes = 10;//-1 for unlimited number of nodes (the size of the tree will then be controlled *ONLY* by minLeafSupport)
 	protected int minLeafSupport = 1;
-	
-	//Member variables and functions 
+
+	//Member variables and functions
 	protected Split root = null;
 	protected List<Split> leaves = null;
-	
+
 	protected DataPoint[] trainingSamples = null;
 	protected double[] trainingLabels = null;
 	protected int[] features = null;
 	protected float[][] thresholds = null;
 	protected int[] index = null;
 	protected FeatureHistogram hist = null;
-	
+
 	public RegressionTree(Split root)
 	{
 		this.root = root;
@@ -50,7 +50,7 @@ public class RegressionTree {
 		for(int i=0;i<trainingSamples.length;i++)
 			index[i] = i;
 	}
-	
+
 	/**
 	 * Fit the tree from the specified training data
 	 */
@@ -71,24 +71,24 @@ public class RegressionTree {
 		{
 			Split leaf = queue.get(0);
 			queue.remove(0);
-			
+
 			if(leaf.getSamples().length < 2 * minLeafSupport)
 			{
 				taken++;
 				continue;
 			}
-			
+
 			if(!leaf.split(trainingLabels, minLeafSupport))//unsplitable (i.e. variance(s)==0; or after-split variance is higher than before)
 				taken++;
 			else
 			{
 				insert(queue, leaf.getLeft());
 				insert(queue, leaf.getRight());
-			}			
+			}
 		}
 		leaves = root.leaves();
 	}
-	
+
 	/**
 	 * Get the tree output for the input sample
 	 * @param dp
@@ -120,7 +120,7 @@ public class RegressionTree {
 		for(int i=0;i<leaves.size();i++)
 			leaves.get(i).clearSamples();
 	}
-	
+
 	/**
 	 * Generate the string representation of the tree
 	 */
@@ -136,7 +136,7 @@ public class RegressionTree {
 			return root.toString(indent);
 		return "";
 	}
-	
+
 	public double variance()
 	{
 		double var = 0;
