@@ -1,7 +1,7 @@
 /*===============================================================================
  * Copyright (c) 2010-2012 University of Massachusetts.  All Rights Reserved.
  *
- * Use of the RankLib package is subject to the terms of the software license set 
+ * Use of the RankLib package is subject to the terms of the software license set
  * forth in the LICENSE file included with this software, and also available at
  * http://people.cs.umass.edu/~vdang/ranklib_license.html
  *===============================================================================
@@ -15,13 +15,13 @@ import ciir.umass.edu.utilities.Sorter;
 
 /**
  * @author vdang
- * 
- * This class implement the list of objects (each of which is a DataPoint) to be ranked. 
+ *
+ * This class implement the list of objects (each of which is a DataPoint) to be ranked.
  */
 public class RankList {
 
 	protected DataPoint[] rl = null;
-	
+
 	public RankList(List<DataPoint> rl)
 	{
 		this.rl = new DataPoint[rl.size()];
@@ -45,7 +45,7 @@ public class RankList {
 		this.rl = new DataPoint[rl.size()];
 		for(int i=0;i<idx.length;i++)
 			this.rl[i] = rl.get(idx[i]-offset);
-	}	
+	}
 	public String getID()
 	{
 		return get(0).getID();
@@ -62,15 +62,21 @@ public class RankList {
 	{
 		rl[k] = p;
 	}
+    public void swap(int i, int j)
+    {
+        DataPoint temp = this.rl[i];
+        this.rl[j] = temp;
+        this.rl[i] = this.rl[j];
+    }
 	public RankList getCorrectRanking()
 	{
 		double[] score = new double[rl.length];
 		for(int i=0;i<rl.length;i++)
 			score[i] = rl[i].getLabel();
-		int[] idx = Sorter.sort(score, false); 
+		int[] idx = Sorter.sort(score, false);
 		return new RankList(this, idx);
 	}
-	
+
 	public RankList getRanking(short fid)
 	{
 		double[] score = new double[rl.length];
