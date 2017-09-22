@@ -12,17 +12,9 @@
 package ciir.umass.edu.metric;
 
 import ciir.umass.edu.learning.RankList;
-import ciir.umass.edu.learning.DataPoint;
-import ciir.umass.edu.utilities.RankLibError;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.IntStream;
 import java.lang.ArithmeticException;
 
 /**
