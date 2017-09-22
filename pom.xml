@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>edu.umass.ciir</groupId>
-  <artifactId>RankLib</artifactId>
-  <version>2.9-SNAPSHOT</version>
+  <artifactId>RankLib-kendall</artifactId>
+  <version>2.9-KENDALL</version>
 
   <packaging>jar</packaging>
-  <name>RankLib</name>
+  <name>RankLib-kendall</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mainClass>ciir.umass.edu.eval.Evaluator</mainClass>

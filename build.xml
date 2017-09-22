@@ -1,13 +1,21 @@
- <project name="MyProject" default="dist" basedir=".">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<project name="RankLib" default="dist" basedir=".">
   <description>
-      simple example build file
+      RankLib builder
   </description>
+	
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
   <property name="build" location="build"/>
   <property name="dist"  location="bin"/>
 
-  <target name="init">
+  <path id="compile.classpath">
+    <pathelement location="build"/>
+    <pathelement location="lib/commons-math3-3.6.1.jar"/>
+  </path>
+
+  <target name="init" depends="clean">
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
@@ -19,19 +27,17 @@
  -->
   </target>
 
-  <path id="compile.classpath">
-  </path>
 
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
     <javac srcdir="${src}"
         destdir="${build}"
+        classpathref="compile.classpath"
         includeantruntime="false"
         debug="true" debuglevel="lines,vars,source">
 	   <exclude name="ciir/umass/edu/tuning/*.java"/>
 	   <exclude name="test/*.java"/>
-           <classpath refid="compile.classpath"/>
     </javac>
   </target>
 
@@ -41,8 +47,7 @@
         <path refid="compile.classpath" />
         <flattenmapper />
     </pathconvert>
-    <!-- Create the distribution directory -->
-    <!--mkdir dir="${dist}/lib"/-->
+
     <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
     <manifest file="MANIFEST.MF">
         <attribute name="Built-By" value="vdang"/>
@@ -50,9 +55,20 @@
         <attribute name="Class-Path" value="${mf.classpath}" />
     </manifest>
     <jar jarfile="${dist}/RankLib.jar" basedir="${build}" manifest="MANIFEST.MF" />
+
+   <jar jarfile="${dist}/RankLib_math3.jar" basedir="${build}" filesetmanifest="skip">
+     <zipgroupfileset dir="bin" includes="*.jar"/>
+     <zipgroupfileset dir="lib" includes="*.jar" excludes=""/>
+     <manifest>
+       <attribute name="Built-By" value="vdang"/>
+       <attribute name="Main-Class" value="ciir.umass.edu.eval.Evaluator"/>
+       <attribute name="Class-Path" value="${mf.classpath}" />
+     </manifest>
+    </jar>
+
   </target>
 
-  <!--copy todir="${dist.lib}">
+  <!--copy todir="${dist}/lib">
     <fileset dir="${lib}">
         <include name="*.jar"/>
     </fileset>
